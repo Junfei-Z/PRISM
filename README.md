@@ -7,9 +7,8 @@ This repository contains the implementation of PRISM, a privacy-aware cloud-edge
 **Conference:** AAAI Conference on Artificial Intelligence (AAAI 2026)  
 
 **Authors:**  
-Junfei Zhan\*, Haoxun Shen\*, Zheng Lin, Tengjiao He†  
+Junfei Zhan\, Haoxun Shen\, Zheng Lin, Tengjiao He  
 
-\*Equal contribution †Corresponding author
 
 ## Abstract
 PRISM addresses privacy challenges in cloud-based LLM inference through a novel cloud-edge collaborative framework. The system performs sensitivity profiling to intelligently route user prompts, applies adaptive two-layer differential privacy for entity protection, and uses semantic sketch-based collaboration to balance privacy, utility, and efficiency.
@@ -305,4 +304,5 @@ For questions or collaborations, please contact: [contact information]
 
 
 This work was supported by [funding information].
+
 
