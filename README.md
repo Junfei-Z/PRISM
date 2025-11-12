@@ -282,7 +282,7 @@ If you use this code in your research, please cite:
 
 ```bibtex
 @inproceedings{zhan2026prism,
-  title     = {PRISM: Privacy-Aware Cloud--Edge Inference Framework},
+  title     = {PRISM: Privacy-Aware Routing for Adaptive Cloud–Edge LLM Inference via Semantic Sketch Collaboration},
   author    = {Junfei Zhan and Haoxun Shen and Zheng Lin and Tengjiao He},
   booktitle = {Proceedings of the AAAI Conference on Artificial Intelligence (AAAI 2026)},
   year      = {2026},
@@ -302,6 +302,7 @@ For questions or collaborations, please contact: [contact information]
 
 
 This work was supported by [funding information].
+
 
 
 
