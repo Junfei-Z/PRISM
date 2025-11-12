@@ -1,0 +1,53 @@
+# Few-shot Demonstration Set for Cloud Sketch Generation
+# Based on PRISM Framework
+# Format: (P*, S) where P* is perturbed prompt, S is semantic sketch
+
+## TOURISM EXAMPLES
+
+Example 1 (Clean Input):
+Perturbed_Prompt: "I plan to travel solo to Tokyo for two days; help me design my itinerary."
+Sketch: Day 1: Arrival, local exploration; Day 2: Cultural visit, outdoor activity, local dining.
+
+Example 2 (Category Obfuscated - Location → Person):
+Perturbed_Prompt: "I plan to travel solo to Emma for two days; help me design my itinerary."
+Sketch: Day 1–2: Orientation, general city exploration, museum or park, casual dining, outdoor walk.
+
+Example 3 (Mixed Obfuscation):
+Perturbed_Prompt: "I plan to travel solo to JPMorgan for five days with my friend Elon."
+Sketch: Day 1–5: Destination orientation, historical sites, social activities, structured itinerary with flexibility.
+
+## MEDICAL EXAMPLES
+
+Example 1 (Clean Input):
+Perturbed_Prompt: "A 28-year-old female patient named Emma reports symptoms: headache, dizziness."
+Sketch: Demographics noted; Symptoms logged; Plan: Neurological exam, imaging, specialist referral.
+
+Example 2 (Category Obfuscated - Person → Organization):
+Perturbed_Prompt: "A 28-year-old female patient named IBM reports symptoms: headache, dizziness."
+Sketch: Symptoms documented; Possible stress-related or neurological; Diagnostics recommended.
+
+Example 3 (Value Obfuscated):
+Perturbed_Prompt: "A 42-year-old female patient named Google reports symptoms: nausea and fatigue."
+Sketch: Patient history recorded; Symptom profile analyzed; Diagnostics planned.
+
+## BANKING EXAMPLES
+
+Example 1 (Clean Input):
+Perturbed_Prompt: "I want to file a dispute regarding a charge of $10 on my Chase card."
+Sketch: Dispute initiated; Amount and institution recorded; Resolution timeline outlined.
+
+Example 2 (Category Obfuscated - Bank → Person):
+Perturbed_Prompt: "I want to file a dispute regarding a charge of $10 on my Alice card."
+Sketch: Dispute recorded; Possible merchant error; Review process initiated.
+
+Example 3 (Mixed Obfuscation):
+Perturbed_Prompt: "I want to file a dispute regarding a charge of $25 on my Emma account."
+Sketch: Charge issue reported; Card/entity obfuscated; Process outlined for user assistance.
+
+## GUIDELINES FOR SKETCH GENERATION
+- Sketches are structured outlines, not full responses
+- Use concise, semantically aligned formats across categories
+- Obfuscation is realized via entity-value substitution, not placeholder tokens
+- Maintain abstraction consistency even under semantic distortion
+- Do not attempt to correct or infer true sensitive entities
+- Each sketch must remain interpretable and adequate for downstream denoising
