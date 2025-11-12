@@ -5,9 +5,7 @@ This repository contains the implementation of PRISM, a privacy-aware cloud-edge
 ## 📄 Paper Information
 **Title:** PRISM: Privacy-Aware Cloud–Edge Inference Framework  
 **Conference:** AAAI Conference on Artificial Intelligence (AAAI 2026)  
-
-**Authors:**  
-Junfei Zhan\, Haoxun Shen\, Zheng Lin, Tengjiao He  
+**Authors:**  Junfei Zhan\, Haoxun Shen\, Zheng Lin, Tengjiao He  
 
 
 ## Abstract
@@ -304,5 +302,6 @@ For questions or collaborations, please contact: [contact information]
 
 
 This work was supported by [funding information].
+
 
 
