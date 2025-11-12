@@ -280,12 +280,13 @@ The PRISM implementation includes comprehensive evaluation capabilities:
 If you use this code in your research, please cite:
 
 ```bibtex
-@inproceedings{prism-framework,
-  title={PRISM: Privacy-Aware Cloud-Edge Inference Framework},
-  author={[Authors withheld for blind review]},
-  booktitle={[Conference proceedings withheld for blind review]},
-  year={[Year withheld for blind review]}
+@inproceedings{zhan2026prism,
+  title     = {PRISM: Privacy-Aware Cloud--Edge Inference Framework},
+  author    = {Junfei Zhan and Haoxun Shen and Zheng Lin and Tengjiao He},
+  booktitle = {Proceedings of the AAAI Conference on Artificial Intelligence (AAAI 2026)},
+  year      = {2026},
 }
+
 ```
 
 ## License
@@ -297,5 +298,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 For questions or collaborations, please contact: [contact information]
 
 ## Acknowledgments
+
 
 This work was supported by [funding information].
