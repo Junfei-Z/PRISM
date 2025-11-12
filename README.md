@@ -290,18 +290,8 @@ If you use this code in your research, please cite:
 
 ```
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contact
-
-For questions or collaborations, please contact: [contact information]
-
-## Acknowledgments
 
 
-This work was supported by [funding information].
 
 
 
