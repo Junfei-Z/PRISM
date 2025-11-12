@@ -1,9 +1,9 @@
-# PRISM: Privacy-Aware Cloud-Edge Inference Framework
+# PRISM: Privacy-Aware Routing for Adaptive Cloud–Edge LLM Inference via Semantic Sketch Collaboration
 
 This repository contains the implementation of PRISM, a privacy-aware cloud-edge collaborative inference framework designed to balance privacy protection, computational efficiency, and response quality in LLM deployments.
 
 ## 📄 Paper Information
-**Title:** PRISM: Privacy-Aware Cloud–Edge Inference Framework  
+**Title:** PRISM: Privacy-Aware Routing for Adaptive Cloud–Edge LLM Inference via Semantic Sketch Collaboration 
 **Conference:** AAAI Conference on Artificial Intelligence (AAAI 2026)  
 **Authors:**  Junfei Zhan\, Haoxun Shen\, Zheng Lin, Tengjiao He  
 
@@ -302,6 +302,7 @@ For questions or collaborations, please contact: [contact information]
 
 
 This work was supported by [funding information].
+
 
 
 
