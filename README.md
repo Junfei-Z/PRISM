@@ -165,14 +165,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-## 📧 Contact
-
-For questions or collaborations, please contact:
-- Junfei Zhan: [junfeiz@seas.upenn.edu](mailto:junfeiz@seas.upenn.edu)
-- Haoxun Shen: [haoxuns@seas.upenn.edu](mailto:haoxuns@seas.upenn.edu)
-
----
-
 ## 📜 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
