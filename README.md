@@ -1,4 +1,4 @@
-# 🔐 PRISM: Privacy-Aware Routing for Adaptive Cloud–Edge LLM Inference
+# 🔐 PRISM: Privacy-Aware Routing for Adaptive Cloud–Edge LLM Inference via Semantic Sketch Collaboration
 
 [![AAAI 2026](https://img.shields.io/badge/AAAI-2026-blue)](https://aaai.org/conference/aaai/aaai-26/)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-brightgreen.svg)](https://www.python.org/)
@@ -146,7 +146,7 @@ config = {
 
 ## 📖 Citation
 
-If you use this code in your research, please cite:
+If our method or implementation contributes to your research, we would greatly appreciate a citation:
 
 ```bibtex
 @inproceedings{zhan2026prism,
@@ -168,4 +168,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 📜 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
 
