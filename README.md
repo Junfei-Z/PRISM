@@ -1,6 +1,9 @@
 # 🔐 PRISM: Privacy-Aware Routing for Adaptive Cloud–Edge LLM Inference via Semantic Sketch Collaboration
 
-[![AAAI 2026](https://img.shields.io/badge/AAAI-2026-blue)](https://aaai.org/conference/aaai/aaai-26/)
+[![AAAI 2026](https://img.shields.io/badge/AAAI-2026-blue)](https://ojs.aaai.org/index.php/AAAI/article/view/40041)
+[![Paper](https://img.shields.io/badge/Paper-PDF-red)](https://ojs.aaai.org/index.php/AAAI/article/view/40041/44002)
+[![DOI](https://img.shields.io/badge/DOI-10.1609%2Faaai.v40i33.40041-orange)](https://doi.org/10.1609/aaai.v40i33.40041)
+[![Project Page](https://img.shields.io/badge/Project-Page-purple)](https://junfei-z.github.io/prism/)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-brightgreen.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-red.svg)](LICENSE)
 
@@ -9,8 +12,16 @@
 ## 📄 Paper
 
 **Title:** PRISM: Privacy-Aware Routing for Adaptive Cloud–Edge LLM Inference via Semantic Sketch Collaboration
-**Conference:** AAAI 2026
+**Conference:** AAAI 2026 (Technical Track on Machine Learning)
 **Authors:** Junfei Zhan, Haoxun Shen, Zheng Lin, Tengjiao He
+**DOI:** [10.1609/aaai.v40i33.40041](https://doi.org/10.1609/aaai.v40i33.40041)
+
+| Resource | Link |
+|----------|------|
+| 📄 Paper (PDF) | [AAAI Proceedings](https://ojs.aaai.org/index.php/AAAI/article/view/40041/44002) |
+| 🌐 Project Page | [junfei-z.github.io/prism](https://junfei-z.github.io/prism/) |
+| 🖼️ Poster | [AAAI Poster](https://ojs.aaai.org/index.php/AAAI/article/view/40041/49562) |
+| 💻 Code | [GitHub](https://github.com/Junfei-Z/PRISM) |
 
 ---
 
@@ -150,10 +161,16 @@ If our method or implementation contributes to your research, we would greatly a
 
 ```bibtex
 @inproceedings{zhan2026prism,
-  title     = {PRISM: Privacy-Aware Routing for Adaptive Cloud–Edge LLM Inference via Semantic Sketch Collaboration},
-  author    = {Junfei Zhan and Haoxun Shen and Zheng Lin and Tengjiao He},
-  booktitle = {Proceedings of the AAAI Conference on Artificial Intelligence (AAAI 2026)},
-  year      = {2026}
+  title     = {PRISM: Privacy-Aware Routing for Adaptive Cloud-Edge
+               LLM Inference via Semantic Sketch Collaboration},
+  author    = {Zhan, Junfei and Shen, Haoxun and Lin, Zheng and He, Tengjiao},
+  booktitle = {Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume    = {40},
+  number    = {33},
+  pages     = {28150--28158},
+  year      = {2026},
+  doi       = {10.1609/aaai.v40i33.40041},
+  url       = {https://ojs.aaai.org/index.php/AAAI/article/view/40041}
 }
 ```
 
