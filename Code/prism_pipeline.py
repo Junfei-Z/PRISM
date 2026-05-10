@@ -30,45 +30,72 @@ class PRISMPipeline:
     4. Cloud-Edge Semantic Sketch Collaboration
     """
     
-    def __init__(self,
-                 risk_threshold: float = 0.5,
-                 privacy_threshold: float = 0.5,
-                 epsilon_total: float = 2.0,
-                 alpha: float = 0.5,
-                 lambda_entropy: float = 0.4,
-                 api_key: str = None,
-                 base_url: str = "https://api.chatanywhere.tech/v1",
-                 model: str = "gpt-4o"):
+    def __init__(
+        self,
+        slm_model_path: str,
+        risk_threshold: float = 0.5,
+        privacy_threshold: float = 0.5,
+        epsilon_total: float = 2.0,
+        alpha: float = 0.5,
+        lambda_entropy: float = 0.4,
+        api_key: str = None,
+        base_url: str = "https://api.chatanywhere.tech/v1",
+        model: str = "gpt-4o",
+        slm_n_gpu_layers: int = 32,
+        slm_n_ctx: int = 2048,
+        slm_n_batch: int = 512,
+        slm_temperature: float = 0.7,
+        slm_top_p: float = 0.9,
+        slm_max_tokens: int = 512,
+    ):
         """
-        Initialize complete PRISM pipeline.
-        
+        Initialize the complete PRISM pipeline (Algorithm 1 in the paper).
+
         Args:
-            risk_threshold: Threshold for entity risk assessment
-            privacy_threshold: Threshold for personal context detection
-            epsilon_total: Total privacy budget for LDP
-            alpha: Balance parameter for budget allocation
-            lambda_entropy: Entropy regularization weight for soft gating
-            api_key: OpenAI API key for cloud processing (use environment variable OPENAI_API_KEY if None)
-            base_url: Cloud API base URL
-            model: Cloud LLM model name
+            slm_model_path: Path to the GGUF-quantised edge SLM file, e.g.
+                ``"models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"``.
+                The edge SLM (G_edge) is used for both edge-only generation
+                and collaborative sketch refinement.  Models evaluated in the
+                paper: TinyLLaMA-1.1B (S4), Qwen1.5-1.8B-Chat (S2),
+                StableLM-2-Zephyr-1.6B (S3), Phi-3.5-mini-3.5B (S1).
+            risk_threshold: Threshold for entity risk assessment.
+            privacy_threshold: Threshold for personal context detection.
+            epsilon_total: Total LDP privacy budget epsilon.
+            alpha: Budget allocation balance parameter (Section 'Adaptive
+                Two-Layer LDP' in the paper).
+            lambda_entropy: Entropy regularisation weight for soft gating.
+            api_key: Cloud LLM API key (falls back to OPENAI_API_KEY env var).
+            base_url: Cloud API base URL.
+            model: Cloud LLM model name (G_cloud).
+            slm_n_gpu_layers: GPU layers for the edge SLM (default 32,
+                matching the RTX 3070 setup in the paper experiments).
+            slm_n_ctx: SLM context window in tokens (default 2048).
+            slm_n_batch: Prompt batch size (default 512).
+            slm_temperature: Sampling temperature (default 0.7).
+            slm_top_p: Nucleus sampling threshold (default 0.9).
+            slm_max_tokens: Max new tokens per SLM call (default 512).
         """
         self.logger = logging.getLogger("PRISMPipeline")
-        
-        # Initialize all components
+
         self.edge_detector = EdgeEntityDetector(
             risk_threshold=risk_threshold,
-            privacy_threshold=privacy_threshold
+            privacy_threshold=privacy_threshold,
         )
-        
         self.ldp_mechanism = TwoLayerLDP(alpha=alpha)
-        
         self.cloud_generator = CloudSketchGenerator(
             api_key=api_key,
             base_url=base_url,
-            model=model
+            model=model,
         )
-        
-        self.edge_reintegrator = EdgeDenoisingReintegrator()
+        self.edge_reintegrator = EdgeDenoisingReintegrator(
+            model_path=slm_model_path,
+            n_gpu_layers=slm_n_gpu_layers,
+            n_ctx=slm_n_ctx,
+            n_batch=slm_n_batch,
+            temperature=slm_temperature,
+            top_p=slm_top_p,
+            max_tokens=slm_max_tokens,
+        )
         
         # Configuration
         self.epsilon_total = epsilon_total
@@ -318,20 +345,29 @@ class PRISMPipeline:
     
     def get_pipeline_info(self) -> Dict:
         """Get information about the pipeline configuration."""
+        slm = self.edge_reintegrator
         return {
             "components": {
                 "edge_detector": "EdgeEntityDetector",
-                "ldp_mechanism": "TwoLayerLDP", 
+                "ldp_mechanism": "TwoLayerLDP",
                 "cloud_generator": "CloudSketchGenerator",
-                "edge_reintegrator": "EdgeDenoisingReintegrator"
+                "edge_reintegrator": "EdgeDenoisingReintegrator",
             },
             "configuration": {
                 "risk_threshold": self.risk_threshold,
                 "epsilon_total": self.epsilon_total,
                 "alpha": self.ldp_mechanism.alpha,
-                "cloud_model": self.cloud_generator.model
+                "cloud_model": self.cloud_generator.model,
+                "edge_slm": {
+                    "model_path": slm.model_path,
+                    "n_gpu_layers": slm.n_gpu_layers,
+                    "n_ctx": slm.n_ctx,
+                    "temperature": slm.temperature,
+                    "top_p": slm.top_p,
+                    "max_tokens": slm.max_tokens,
+                },
             },
-            "methodology": "PRISM: Privacy-Aware Cloud-Edge Inference Framework"
+            "methodology": "PRISM: Privacy-Aware Cloud-Edge Inference Framework",
         }
     
     def benchmark_performance(self, test_prompts: List[str]) -> Dict:
@@ -387,77 +423,68 @@ class PRISMPipeline:
 
 
 def main():
-    """Comprehensive demo of the complete PRISM pipeline."""
-    
-    # Configure logging
-    logging.basicConfig(level=logging.INFO, format='%(name)s - %(levelname)s - %(message)s')
-    
-    # Initialize PRISM pipeline
-    print("🚀 PRISM Framework Pipeline Demo")
+    """End-to-end demo of the PRISM pipeline."""
+    import os
+    import argparse
+
+    logging.basicConfig(level=logging.INFO, format="%(name)s - %(levelname)s - %(message)s")
+
+    parser = argparse.ArgumentParser(description="PRISM Pipeline Demo")
+    parser.add_argument(
+        "--slm-model",
+        default=os.environ.get("PRISM_SLM_MODEL_PATH"),
+        required=not os.environ.get("PRISM_SLM_MODEL_PATH"),
+        help=(
+            "Path to GGUF edge SLM file. "
+            "Supported: TinyLLaMA-1.1B, Qwen1.5-1.8B-Chat, "
+            "StableLM-2-Zephyr-1.6B, Phi-3.5-mini-3.5B"
+        ),
+    )
+    parser.add_argument("--n-gpu-layers", type=int, default=32)
+    parser.add_argument("--epsilon", type=float, default=2.0, help="Total LDP budget")
+    args = parser.parse_args()
+
+    print("PRISM Framework Pipeline Demo")
     print("=" * 70)
-    
-    pipeline = PRISMPipeline()
-    
-    # Show pipeline info
+
+    pipeline = PRISMPipeline(
+        slm_model_path=args.slm_model,
+        slm_n_gpu_layers=args.n_gpu_layers,
+        epsilon_total=args.epsilon,
+    )
+
     info = pipeline.get_pipeline_info()
-    print(f"\n📋 Pipeline Configuration:")
-    print(f"   Components: {len(info['components'])} modules integrated")
-    print(f"   Risk Threshold: {info['configuration']['risk_threshold']}")
-    print(f"   Privacy Budget: ε = {info['configuration']['epsilon_total']}")
-    print(f"   Cloud Model: {info['configuration']['cloud_model']}")
-    
-    # Test prompts across privacy levels
+    slm_cfg = info["configuration"]["edge_slm"]
+    print(f"\nPipeline Configuration:")
+    print(f"   Cloud LLM  : {info['configuration']['cloud_model']}")
+    print(f"   Edge SLM   : {slm_cfg['model_path']}")
+    print(f"   GPU layers : {slm_cfg['n_gpu_layers']}")
+    print(f"   Privacy    : epsilon={info['configuration']['epsilon_total']}")
+
     test_prompts = [
-        "I want to plan a trip to Tokyo for 3 days with my family",  # Tourism - Collaborative
-        "My name is Alice and I need to find a doctor in Boston.",   # Medical - Edge-only  
-        "I want to file a dispute regarding a charge of $10 on my Chase card",  # Banking - Collaborative
-        "What is the capital of Japan?",  # General - Cloud-only
+        # (prompt, expected_mode)
+        ("I want to plan a trip to Tokyo for 3 days with my family", "Collaborative"),
+        ("My name is Alice and I need to find a doctor in Boston.", "Edge-only"),
+        ("I want to file a dispute regarding a charge of $10 on my Chase card", "Collaborative"),
+        ("What is the capital of Japan?", "Cloud-only"),
     ]
-    
-    print(f"\nProcessing {len(test_prompts)} Test Prompts")
+
+    print(f"\nProcessing {len(test_prompts)} test prompts")
     print("=" * 70)
-    
-    for i, prompt in enumerate(test_prompts, 1):
-        print(f"\n Test {i}: {prompt}")
+
+    for i, (prompt, expected) in enumerate(test_prompts, 1):
+        print(f"\nTest {i} [{expected}]: {prompt}")
         print("-" * 50)
-        
-        # Process prompt end-to-end
         result = pipeline.process_prompt_end_to_end(prompt)
-        
-        if result['status'] == 'success':
-            # Show key results
-            edge_info = result['edge_detection']
-            perf_info = result['performance']
-            
-            print(f" Detection: {len(edge_info['entities'])} entities, risk={edge_info['risk_score']:.2f}")
-            print(f" Privacy: {'Protected' if result['privacy_preserved'] else 'Not needed'}")
-            print(f"  Category: {result['cloud_processing']['detected_category']}")
-            print(f"  Performance: {perf_info['total_time']:.3f}s total")
-            print(f"Response: {result['edge_refinement']['final_response'][:100]}...")
-            
+        if result["status"] == "success":
+            e = result["edge_detection"]
+            p = result["performance"]
+            print(f"  Entities  : {len(e['entities'])}, risk={e['risk_score']:.2f}")
+            print(f"  Mode      : {result['routing']['mode']}")
+            print(f"  Latency   : {p['total_time']:.2f}s")
+            print(f"  Response  : {result['edge_refinement']['final_response'][:120]}...")
         else:
-            print(f" Error: {result['error_message']}")
-    
-    # Run performance benchmark
-    print(f"\n Performance Benchmark")
-    print("=" * 70)
-    
-    benchmark_results = pipeline.benchmark_performance(test_prompts[:4])  # Use subset for demo
-    
-    summary = benchmark_results['summary']
-    performance = benchmark_results['performance']
-    
-    print(f"Success Rate: {summary['success_rate']:.1f}%")
-    print(f"Privacy Protection Rate: {summary['privacy_protection_rate']:.1f}%")
-    print(f"Average Latency: {performance['average_latency_per_prompt']:.3f}s")
-    print(f"Privacy Overhead: {performance['average_privacy_overhead']:.3f}s")
-    print(f"Throughput: {performance['throughput_prompts_per_second']:.2f} prompts/sec")
-    
-    print(f"\n PRISM Pipeline Demo Complete!")
-    print("   - Sensitivity profiling operational")
-    print("   - Soft gating routing working correctly") 
-    print("   - Adaptive LDP protection functional")
-    print("   - Cloud-edge collaboration successful")
+            print(f"  Error: {result['error_message']}")
 
 
 if __name__ == "__main__":

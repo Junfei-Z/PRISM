@@ -1,163 +1,213 @@
-# 🔐 PRISM: Privacy-Aware Routing for Adaptive Cloud–Edge LLM Inference via Semantic Sketch Collaboration
+# PRISM: Privacy-Aware Routing for Adaptive Cloud–Edge LLM Inference via Semantic Sketch Collaboration
 
 [![AAAI 2026](https://img.shields.io/badge/AAAI-2026-blue)](https://ojs.aaai.org/index.php/AAAI/article/view/40041)
 [![Paper](https://img.shields.io/badge/Paper-PDF-red)](https://ojs.aaai.org/index.php/AAAI/article/view/40041/44002)
 [![DOI](https://img.shields.io/badge/DOI-10.1609%2Faaai.v40i33.40041-orange)](https://doi.org/10.1609/aaai.v40i33.40041)
 [![Project Page](https://img.shields.io/badge/Project-Page-purple)](https://junfei-z.github.io/prism/)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-brightgreen.svg)](https://www.python.org/)
-[![License](https://img.shields.io/badge/license-MIT-red.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **Privacy-aware Routing for Inference with Semantic Modulation (PRISM)** - A context-aware cloud-edge framework that dynamically balances privacy and inference quality for LLM deployments.
+**PRISM** is a context-aware cloud–edge inference framework that dynamically balances privacy and inference quality for LLM deployments. It executes in four stages: (1) edge-side entity-level sensitivity profiling, (2) entropy-regularised soft gating to select an execution path, (3) adaptive two-layer local differential privacy for collaborative paths, and (4) cloud–edge semantic sketch collaboration for final response generation.
 
-## 📄 Paper
+---
 
-**Title:** PRISM: Privacy-Aware Routing for Adaptive Cloud–Edge LLM Inference via Semantic Sketch Collaboration
-**Conference:** AAAI 2026 (Technical Track on Machine Learning)
-**Authors:** Junfei Zhan, Haoxun Shen, Zheng Lin, Tengjiao He
+## Paper
+
+**Title:** PRISM: Privacy-Aware Routing for Adaptive Cloud–Edge LLM Inference via Semantic Sketch Collaboration  
+**Conference:** AAAI 2026  
+**Authors:** Junfei Zhan, Haoxun Shen, Zheng Lin, Tengjiao He  
 **DOI:** [10.1609/aaai.v40i33.40041](https://doi.org/10.1609/aaai.v40i33.40041)
 
 | Resource | Link |
 |----------|------|
-| 📄 Paper (PDF) | [AAAI Proceedings](https://ojs.aaai.org/index.php/AAAI/article/view/40041/44002) |
-| 🌐 Project Page | [junfei-z.github.io/prism](https://junfei-z.github.io/prism/) |
-| 🖼️ Poster | [AAAI Poster](https://ojs.aaai.org/index.php/AAAI/article/view/40041/49562) |
-| 💻 Code | [GitHub](https://github.com/Junfei-Z/PRISM) |
+| Paper (PDF) | [AAAI Proceedings](https://ojs.aaai.org/index.php/AAAI/article/view/40041/44002) |
+| Project Page | [junfei-z.github.io/prism](https://junfei-z.github.io/prism/) |
+| Poster | [AAAI Poster](https://ojs.aaai.org/index.php/AAAI/article/view/40041/49562) |
 
 ---
 
-## 🎯 Overview
+## Overview
 
-PRISM addresses privacy challenges in cloud-based LLM inference through intelligent routing and adaptive privacy protection:
+PRISM routes each user prompt to one of three execution paths based on its assessed privacy risk:
 
-- 🔍 **Sensitivity Profiling**: Computes risk scores and identifies sensitive entities
-- 🚦 **Soft Gating Router**: Entropy-regularized neural routing for context-aware execution
-- 🛡️ **Adaptive Two-Layer LDP**: Category-aware differential privacy with automatic budget allocation
-- 🤝 **Semantic Sketch Collaboration**: Privacy-preserving cloud-edge communication
+| Mode | When used | Privacy |
+|------|-----------|---------|
+| **Cloud-only** | Low-risk prompts | None (sent as-is) |
+| **Edge-only** | High-risk prompts | Full (SLM generates locally) |
+| **Collaborative** | Medium-risk prompts | Adaptive LDP + sketch refinement |
 
-### Three Execution Modes
-
-| Mode | Privacy | Performance | Use Case |
-|------|---------|-------------|----------|
-| 🌩️ **Cloud-Only** | ❌ Low | ⚡ Fast | General queries |
-| 📱 **Edge-Only** | ✅ High | 🐢 Slower | Sensitive data (medical) |
-| 🔄 **Collaborative** | ⚖️ Balanced | 🚀 Optimal | Most queries (tourism, banking) |
+In collaborative mode, sensitive entities are perturbed with adaptive two-layer LDP before the prompt is sent to the cloud. The cloud LLM generates a *semantic sketch* from the obfuscated prompt; the edge SLM then reconstructs the final response by conditioning on both the original prompt (available locally) and the sketch.
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```
 PRISM/
 ├── Code/
-│   ├── edge_detection.py          # 🔍 Sensitivity profiling module
-│   ├── soft_gating.py              # 🚦 Entropy-regularized routing
-│   ├── two_layer_ldp.py           # 🛡️ Adaptive differential privacy
-│   ├── cloud_sketch_generator.py  # ☁️ Cloud-side semantic sketch generation
-│   ├── edge_denoising.py          # 📱 Edge-side response refinement
-│   ├── prism_pipeline.py          # 🔧 End-to-end PRISM framework
-│   ├── windows_energy_monitor.py  # ⚡ Energy consumption monitor
-│   ├── few_shot_examples_cloud.txt
-│   └── few_shot_examples_edge.txt
+│   ├── edge_detection.py           # Sensitivity profiling (NER + risk scoring)
+│   ├── soft_gating.py              # Entropy-regularised soft gating router
+│   ├── two_layer_ldp.py            # Adaptive two-layer LDP mechanism
+│   ├── cloud_sketch_generator.py   # Cloud-side semantic sketch generation
+│   ├── edge_denoising.py           # Edge-side SLM inference (G_edge)
+│   ├── prism_pipeline.py           # End-to-end PRISM pipeline (Algorithm 1)
+│   ├── windows_energy_monitor.py   # Energy measurement (Windows / NVML)
+│   ├── few_shot_examples_cloud.txt # D_cloud: cloud few-shot demonstrations
+│   └── few_shot_examples_edge.txt  # D_edge: edge few-shot demonstrations
 ├── Dataset/
-│   ├── prism_dataset.xlsx         # Evaluation dataset (4 domains)
-│   └── route_result.xlsx          # Routing experiment results
-├── prism.pdf                      # 📖 Paper
-├── Appendix_PRISM.pdf             # 📚 Supplementary materials
-└── requirements_prism.txt         # 📦 Dependencies
+│   ├── prism_dataset.xlsx          # Evaluation dataset (4 domains, 400 prompts)
+│   └── route_result.xlsx           # Routing experiment results
+├── prism.pdf                       # Paper
+├── Appendix_PRISM.pdf              # Supplementary material
+└── requirements_prism.txt          # Python dependencies
 ```
 
 ---
 
-## 🚀 Quick Start
+## Installation
 
-### Installation
+### 1. Clone and install Python dependencies
 
 ```bash
-# Clone repository
 git clone https://github.com/Junfei-Z/PRISM.git
 cd PRISM
-
-# Install dependencies
 pip install -r requirements_prism.txt
-
-# Download spaCy model for entity detection
-python -m spacy download en_core_web_sm
-
-# Set OpenAI API key for cloud inference
-export OPENAI_API_KEY="your-api-key-here"
+python -m spacy download en_core_web_lg
 ```
 
-### Basic Usage
+### 2. Install llama-cpp-python with GPU support
+
+The edge SLM is served via [llama-cpp-python](https://github.com/abetlen/llama-cpp-python). Install the CUDA-enabled build for GPU offloading:
+
+```bash
+# CUDA 12.x
+CMAKE_ARGS="-DGGML_CUDA=on" pip install llama-cpp-python --upgrade --force-reinstall --no-cache-dir
+
+# CPU-only (slower, no GPU required)
+pip install llama-cpp-python
+```
+
+### 3. Download a GGUF edge SLM
+
+The paper evaluates four edge SLMs. Download any GGUF-quantised variant from HuggingFace and place it in the `models/` directory.
+
+| Model | Paper label | HuggingFace repo | Recommended GGUF |
+|-------|-------------|------------------|-----------------|
+| Phi-3.5-mini-3.5B | S1 | [bartowski/Phi-3.5-mini-instruct-GGUF](https://huggingface.co/bartowski/Phi-3.5-mini-instruct-GGUF) | `Phi-3.5-mini-instruct-Q6_K_L.gguf` |
+| Qwen1.5-1.8B-Chat | S2 | [Qwen/Qwen1.5-1.8B-Chat-GGUF](https://huggingface.co/Qwen/Qwen1.5-1.8B-Chat-GGUF) | `qwen1_5-1_8b-chat-q4_k_m.gguf` |
+| StableLM-2-Zephyr-1.6B | S3 | [second-state/stablelm-2-zephyr-1.6b-GGUF](https://huggingface.co/second-state/stablelm-2-zephyr-1.6b-GGUF) | `stablelm-2-zephyr-1_6b-Q4_K_M.gguf` |
+| TinyLLaMA-1.1B | S4 | [TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF](https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF) | `tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf` |
+
+```bash
+mkdir -p models
+# Example: TinyLLaMA
+wget -P models https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+```
+
+### 4. Set cloud API key
+
+```bash
+export OPENAI_API_KEY="your-api-key"
+```
+
+---
+
+## Quick Start
+
+### Python API
 
 ```python
 from Code.prism_pipeline import PRISMPipeline
 
-# Initialize PRISM
 pipeline = PRISMPipeline(
-    edge_model_path="models/phi-3.5-mini",
-    cloud_api_key="your-api-key",
-    epsilon_total=1.0,  # Privacy budget
-    lambda_entropy=0.4  # Routing entropy weight
+    slm_model_path="models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
+    slm_n_gpu_layers=32,   # set to 0 for CPU-only
+    epsilon_total=2.0,     # total LDP privacy budget
+    alpha=0.5,             # budget allocation parameter
+    lambda_entropy=0.4,    # entropy regularisation weight
 )
 
-# Process prompt with automatic routing
-prompt = "I plan to travel to Tokyo for three days"
-result = pipeline.process_prompt_end_to_end(prompt)
+result = pipeline.process_prompt_end_to_end(
+    "I plan to travel solo to Tokyo for three days; help me design my itinerary."
+)
+print(result["routing"]["mode"])              # e.g. "collaborative"
+print(result["edge_refinement"]["final_response"])
+```
 
-print(f"Routing: {result['routing_decision']}")
-print(f"Response: {result['edge_refinement']['final_response']}")
+### Command-line demo
+
+```bash
+cd Code
+python prism_pipeline.py \
+    --slm-model ../models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf \
+    --n-gpu-layers 32 \
+    --epsilon 2.0
+```
+
+Or via environment variable:
+
+```bash
+export PRISM_SLM_MODEL_PATH=../models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+python prism_pipeline.py
+```
+
+### Edge-only SLM test
+
+```bash
+cd Code
+python edge_denoising.py \
+    --model ../models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf \
+    --n-gpu-layers 32
 ```
 
 ---
 
-## ⚙️ Configuration
+## Inference Parameters
 
-```python
-config = {
-    "epsilon_total": 1.0,        # 🛡️ Total privacy budget
-    "alpha": 0.5,                # ⚖️ Budget allocation parameter
-    "lambda_entropy": 0.4,       # 🎲 Entropy regularization coefficient
-    "routing_threshold": 0.5,    # 🚦 Sensitivity routing threshold
-    "entity_weights": {          # 🏷️ Domain-specific sensitivity weights
-        "PERSON": 0.9,
-        "LOCATION": 0.6,
-        "ORGANIZATION": 0.4,
-        "DATE_TIME": 0.3
-    }
-}
-```
+The following defaults match the experimental setup in the paper (edge device: NVIDIA RTX 3070 laptop GPU, Windows 10):
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `slm_n_gpu_layers` | 32 | Transformer layers offloaded to GPU |
+| `slm_n_ctx` | 2048 | Context window (tokens) |
+| `slm_n_batch` | 512 | Prompt batch size |
+| `slm_temperature` | 0.7 | Sampling temperature |
+| `slm_top_p` | 0.9 | Nucleus sampling threshold |
+| `slm_max_tokens` | 512 | Max new tokens per call |
+| `epsilon_total` | 2.0 | Total LDP privacy budget |
+| `alpha` | 0.5 | Category/value budget split |
+| `lambda_entropy` | 0.4 | Entropy regularisation weight |
 
 ---
 
-## 📊 Performance Highlights
+## Performance
 
-| Method | Completion Time (s) | Energy (J) | Quality (1-10) |
-|--------|-------------------|-----------|---------------|
+Results from Table 1 of the paper (cloud LLM: GPT-4o, edge SLM: Qwen1.5-1.8B):
+
+| Method | Completion Time (s) | Energy (J) | Inference Quality |
+|--------|-------------------|------------|------------------|
 | **PRISM** | **7.92** | **687** | **6.88** |
 | Uniform LDP | 20.56 | 1708 | 5.72 |
 | Selective LDP | 21.22 | 1771 | 5.94 |
 | Cloud-Only | 5.13 | 296 | 8.14 |
 | Edge-Only | 17.84 | 1574 | 5.09 |
 
-**Key Results:**
-- ⚡ **40-50% reduction** in energy/latency vs. baseline LDP methods
-- 🛡️ **Strong privacy guarantees** (ε-LDP compliance)
-- 📈 **Superior quality** under privacy constraints
+PRISM achieves 40–50% lower latency and energy than uniform/selective LDP baselines while maintaining strong privacy guarantees.
 
 ---
 
-## 🔬 Evaluation Domains
+## Evaluation Dataset
 
-- 🏥 **Medical**: Demographic data, symptom descriptions
-- ✈️ **Tourism**: Travel plans, budgets, destinations
-- 💳 **Banking**: Transaction histories, account info
-- 📚 **General**: Non-sensitive knowledge queries
+The dataset covers four domains (100 prompts each):
+
+- **Tourism** – travel plans, budgets, destinations, group compositions
+- **Medical** – symptoms, demographics, diagnoses (partially adapted from PrivacyRestore)
+- **Banking** – transaction histories, account identifiers, dispute requests
+- **General knowledge** – non-sensitive factual queries (from MT-Bench)
 
 ---
 
-## 📖 Citation
-
-If our method or implementation contributes to your research, we would greatly appreciate a citation:
+## Citation
 
 ```bibtex
 @inproceedings{zhan2026prism,
@@ -176,14 +226,6 @@ If our method or implementation contributes to your research, we would greatly a
 
 ---
 
-## 🤝 Contributing
+## License
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
----
-
-## 📜 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
