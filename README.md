@@ -59,8 +59,8 @@ PRISM/
 │   ├── few_shot_examples_cloud.txt # D_cloud: cloud few-shot demonstrations
 │   └── few_shot_examples_edge.txt  # D_edge: edge few-shot demonstrations
 ├── Dataset/
-│   ├── prism_dataset.xlsx          # Medical-domain evaluation prompts
-│   ├── routing_dataset.xlsx        # Labelled routing dataset (4 domains)
+│   ├── prism_dataset.xlsx          # Evaluation test set (prompts, no labels)
+│   ├── routing_dataset.xlsx        # Labelled routing dataset for gating training
 │   └── route_result.xlsx           # Routing experiment results
 ├── prism.pdf                       # Paper
 ├── Appendix_PRISM.pdf              # Supplementary material
@@ -226,7 +226,7 @@ PRISM achieves 40–50% lower latency and energy than uniform/selective LDP base
 
 ## Evaluation Dataset
 
-The dataset covers four domains (100 prompts each):
+The dataset covers four domains (40 prompts each):
 
 - **Tourism** – travel plans, budgets, destinations, group compositions
 - **Medical** – symptoms, demographics, diagnoses (partially adapted from PrivacyRestore)
