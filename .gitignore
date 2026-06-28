@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Large GGUF edge SLM weights (downloaded separately, see README)
+*.gguf
+
+# OS
+.DS_Store

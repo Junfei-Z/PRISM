@@ -3,6 +3,7 @@ Complete PRISM Framework Integration Pipeline
 Orchestrates end-to-end privacy-preserving cloud-edge collaborative inference.
 """
 
+import os
 import time
 import logging
 from typing import Dict, List, Tuple, Optional
@@ -102,7 +103,8 @@ class PRISMPipeline:
         self.risk_threshold = risk_threshold
         self.lambda_entropy = lambda_entropy
         
-        # Initialize soft gating predictor with pretrained model
+        # Initialize soft gating predictor with the trained routing classifier.
+        # Train it with `python train_soft_gating.py` if the checkpoint is absent.
         self.gating_predictor = SoftGatingPredictor("models/soft_gating_pretrained.pth")
         
         self.logger.info("PRISM Pipeline initialized successfully")

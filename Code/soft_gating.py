@@ -21,6 +21,14 @@ class RoutingMode(Enum):
     CLOUD_ONLY = 2
 
 
+# The risk score R(P) (Eq. 1) is an unbounded sum of per-entity category
+# weights. We scale it into [0, 1] for the gating feature vector by dividing by
+# RISK_SCALE rather than hard-clipping at 1.0, which would collapse all
+# multi-entity prompts to the same value and destroy the signal that separates
+# edge-only (high risk) from collaborative (moderate risk) routing.
+RISK_SCALE = 5.0
+
+
 class SoftGatingModule(nn.Module):
     """
     Soft gating mechanism with entropy regularization.
@@ -84,16 +92,19 @@ class SoftGatingModule(nn.Module):
         Returns:
             π: Routing probability distribution [batch_size, 3]
         """
-        # First layer
+        # First layer. Batch norm needs >1 sample to compute batch statistics in
+        # training mode, but in eval mode it uses the running statistics and is
+        # valid for any batch size. Applying it in both cases keeps the
+        # single-sample inference path consistent with training.
         h1 = self.fc1(z)
-        if h1.shape[0] > 1:  # Only apply batch norm if batch size > 1
+        if h1.shape[0] > 1 or not self.training:
             h1 = self.bn1(h1)
         h1 = self.relu(h1)
         h1 = self.dropout(h1)
-        
+
         # Second layer
         h2 = self.fc2(h1)
-        if h2.shape[0] > 1:
+        if h2.shape[0] > 1 or not self.training:
             h2 = self.bn2(h2)
         h2 = self.leaky_relu(h2)
         h2 = self.dropout(h2)
@@ -202,11 +213,18 @@ class SoftGatingPredictor:
         self.model.eval()
         self.logger = logging.getLogger("SoftGatingPredictor")
         
-        # Load pretrained weights if provided
-        if model_path and os.path.exists(model_path):
+        # Load trained weights. A missing checkpoint is a setup error rather
+        # than something to silently fall back from: random weights would
+        # produce meaningless routing.
+        if model_path:
+            if not os.path.exists(model_path):
+                raise FileNotFoundError(
+                    f"Soft gating checkpoint not found at '{model_path}'. "
+                    "Train it first with `python train_soft_gating.py`.")
             self.load_model(model_path)
         else:
-            self.logger.warning("No pretrained model found, using random initialization")
+            self.logger.warning("No model_path provided; using random initialization "
+                                "(intended only for unit tests).")
         
     def load_model(self, model_path: str):
         """Load pretrained model weights"""
@@ -240,8 +258,8 @@ class SoftGatingPredictor:
         Returns:
             Feature tensor ready for model input
         """
-        # Normalize risk score to [0, 1] range
-        normalized_risk = min(max(risk_score, 0.0), 1.0)
+        # Normalize risk score to [0, 1] by scaling (see RISK_SCALE).
+        normalized_risk = min(max(risk_score, 0.0) / RISK_SCALE, 1.0)
         
         # Prepare feature vector
         features = [normalized_risk]
@@ -295,79 +313,3 @@ class SoftGatingPredictor:
                         f"(π=[{π[0,0]:.3f}, {π[0,1]:.3f}, {π[0,2]:.3f}])")
         
         return routing_mode, probs
-
-
-def create_pretrained_model(save_path: str = "models/soft_gating_pretrained.pth"):
-    """
-    Create a pretrained soft gating model with reasonable weights.
-    This simulates a model that has been trained on privacy-aware routing data.
-    """
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    
-    # Initialize model
-    model = SoftGatingModule()
-    
-    # Simulate trained behavior by setting specific weights
-    with torch.no_grad():
-        # Reset all weights to small random values first
-        for param in model.parameters():
-            if param.dim() > 1:
-                torch.nn.init.xavier_uniform_(param, gain=0.1)
-            else:
-                torch.nn.init.constant_(param, 0)
-        
-        # Adjust final layer biases for desired routing behavior
-        # Based on PRISM dataset: Common→Cloud, Medical→Edge, Tourism/Banking→Collaborative
-        model.fc3.bias[0] = -0.5  # Edge-only (for high risk/medical)
-        model.fc3.bias[1] = 0.8   # Collaborative (for medium risk)
-        model.fc3.bias[2] = 0.2   # Cloud-only (for low risk/common)
-        
-        # Adjust weights to be more sensitive to risk score and entity patterns
-        # Risk score (dimension 0) should have strong influence
-        model.fc1.weight[:32, 0] = 1.5   # First half neurons favor edge for high risk
-        model.fc1.weight[32:, 0] = -1.5  # Second half favor cloud for low risk
-        
-        # Entity sensitivity dimensions should contribute
-        for i in range(1, min(11, model.fc1.weight.shape[1])):
-            model.fc1.weight[:20, i] = 0.8   # Some neurons favor edge with sensitive entities
-            model.fc1.weight[20:40, i] = 0.5 # Some favor collaborative
-            model.fc1.weight[40:, i] = -0.6  # Some favor cloud without sensitive entities
-    
-    # Create checkpoint with training history
-    checkpoint = {
-        'model_state_dict': model.state_dict(),
-        'epoch': 50,
-        'metrics': {
-            'best_val_acc': 0.923,
-            'final_train_loss': 0.342,
-            'final_val_loss': 0.387,
-            'routing_distribution': {
-                'edge_only': 0.25,      # Medical (high risk)
-                'collaborative': 0.50,  # Tourism & Banking (medium risk)
-                'cloud_only': 0.25      # Common (low risk)
-            }
-        },
-        'config': {
-            'input_dim': 11,
-            'hidden_dim': 64,
-            'dropout_rate': 0.1,
-            'lambda_entropy': 0.4
-        },
-        'training_info': {
-            'dataset_size': 10000,
-            'batch_size': 32,
-            'learning_rate': 0.001,
-            'optimizer': 'Adam'
-        }
-    }
-    
-    # Save checkpoint
-    torch.save(checkpoint, save_path)
-    print(f"Created pretrained model at {save_path}")
-    
-    return save_path
-
-
-if __name__ == "__main__":
-    # Create pretrained model for testing
-    create_pretrained_model()

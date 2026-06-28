@@ -47,15 +47,20 @@ PRISM/
 ├── Code/
 │   ├── edge_detection.py           # Sensitivity profiling (NER + risk scoring)
 │   ├── soft_gating.py              # Entropy-regularised soft gating router
+│   ├── generate_training_data.py   # Build the labelled routing dataset
+│   ├── train_soft_gating.py        # Train the soft gating router (Eq. 4-5)
 │   ├── two_layer_ldp.py            # Adaptive two-layer LDP mechanism
 │   ├── cloud_sketch_generator.py   # Cloud-side semantic sketch generation
 │   ├── edge_denoising.py           # Edge-side SLM inference (G_edge)
 │   ├── prism_pipeline.py           # End-to-end PRISM pipeline (Algorithm 1)
 │   ├── windows_energy_monitor.py   # Energy measurement (Windows / NVML)
+│   ├── models/
+│   │   └── soft_gating_pretrained.pth  # Trained gating checkpoint
 │   ├── few_shot_examples_cloud.txt # D_cloud: cloud few-shot demonstrations
 │   └── few_shot_examples_edge.txt  # D_edge: edge few-shot demonstrations
 ├── Dataset/
-│   ├── prism_dataset.xlsx          # Evaluation dataset (4 domains, 400 prompts)
+│   ├── prism_dataset.xlsx          # Medical-domain evaluation prompts
+│   ├── routing_dataset.xlsx        # Labelled routing dataset (4 domains)
 │   └── route_result.xlsx           # Routing experiment results
 ├── prism.pdf                       # Paper
 ├── Appendix_PRISM.pdf              # Supplementary material
@@ -109,6 +114,29 @@ wget -P models https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/res
 ```bash
 export OPENAI_API_KEY="your-api-key"
 ```
+
+### 5. Soft gating router (trained checkpoint included)
+
+The soft gating router maps the sensitivity profiling features `z = [R(P), d]`
+to a distribution over the three execution paths (cloud / collaborative / edge),
+trained with the entropy-regularised objective `L = L_task + λ·H(π)` (Eq. 4-5).
+A trained checkpoint is shipped at `Code/models/soft_gating_pretrained.pth`, so
+the pipeline runs out of the box.
+
+To regenerate it from scratch:
+
+```bash
+cd Code
+python generate_training_data.py   # writes Dataset/routing_dataset.xlsx
+python train_soft_gating.py        # trains Code/models/soft_gating_pretrained.pth
+```
+
+The routing labels follow the paper's policy: prompts with no sensitive
+entities route to cloud, moderately sensitive prompts (tourism, medical) to
+collaborative, and highly sensitive prompts (banking, e.g. card numbers) to
+edge. The 40 medical prompts are the authentic ones from `prism_dataset.xlsx`;
+the tourism / banking / common splits are representative regenerated examples,
+since the original semi-synthetic splits are not redistributable.
 
 ---
 
